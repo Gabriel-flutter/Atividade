@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../../../helper_dev/fakes/character_factory.dart';
-import '../../../../controllers/characters_view_model.dart';
+import 'package:injustice_app/domain/models/character_entity.dart';
+import 'package:injustice_app/presentation/controllers/characters_view_model.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+import 'create_character_sheet.dart';
 
 class CharactersFab extends StatelessWidget {
   final CharactersViewModel viewModel;
@@ -17,9 +18,12 @@ class CharactersFab extends StatelessWidget {
       return FloatingActionButton(
         onPressed: isExecuting
             ? null
-            : () async {
-                final character = CharacterFactory.list(1).first;
-                await viewModel.commands.addCharacter(character);
+            : () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => CreateCharacterSheet(viewModel: viewModel),
+                );
               },
         child: isExecuting
             ? const SizedBox(

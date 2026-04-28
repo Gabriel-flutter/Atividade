@@ -10,6 +10,7 @@ import '../../../../widgets/empty_state.dart';
 import '../../../../widgets/loading_indicator.dart';
 import '../../../../widgets/star_rating.dart';
 import 'package:signals_flutter/signals_flutter.dart';
+import 'edit_character_sheet.dart';
 
 class CharactersBody extends StatelessWidget {
   final CharactersViewModel viewModel;
@@ -57,18 +58,33 @@ class CharactersBody extends StatelessWidget {
               )
             else
               SliverPadding(
-                padding: AppSpacing.paddingMd,
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final character = characters[index];
-                    return CharacterListItem(
-                      character: character,
-                      onDelete: () {},
-                      onTap: () {},
-                    );
-                  }, childCount: characters.length),
-                ),
-              ),
+  padding: AppSpacing.paddingMd,
+  sliver: SliverList(
+    delegate: SliverChildBuilderDelegate((context, index) {
+      final character = characters[index];
+
+      return CharacterListItem(
+        character: character,
+
+        // 🔥 DELETE FUNCIONANDO AQUI
+        onDelete: () {
+          viewModel.commands.deleteCharacter(character.id);
+        },
+
+        onTap: () {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => EditCharacterSheet(
+      character: character,
+      viewModel: viewModel,
+    ),
+  );
+},
+      );
+    }, childCount: characters.length),
+  ),
+),
           ],
         ),
       );

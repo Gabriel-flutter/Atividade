@@ -10,13 +10,35 @@ import '../../../core/patterns/result.dart';
 
 final class CharacterSharedPreferencesService
     implements ICharacterLocalStorage {
-  // Chave de armazenamento para os personagens
   static const String _storageKey = 'characters';
 
   @override
-  Future<CharacterResult> deleteCharacter(String id) {
-    // TODO: implement deleteCharacter
-    throw UnimplementedError();
+  Future<CharacterResult> deleteCharacter(String id) async {
+    try {
+      final currentResult = await getAllCharacters();
+
+      return await currentResult.fold(
+        onSuccess: (characters) async {
+
+          final updatedCharacters =
+              characters.where((c) => c.id != id).toList();
+
+          await _saveCharacters(updatedCharacters);
+
+          final deletedCharacter =
+              characters.firstWhere((c) => c.id == id);
+
+          return Success(deletedCharacter);
+        },
+        onFailure: (failure) async {
+          return Error(ApiLocalFailure('Erro ao deletar personagem'));
+        },
+      );
+    } catch (e) {
+      return Error(
+        ApiLocalFailure('Shared Preferences - Erro ao deletar: $e'),
+      );
+    }
   }
 
   @override
@@ -26,7 +48,7 @@ final class CharacterSharedPreferencesService
       final result = prefs.getString(_storageKey);
 
       if (result == null || result.isEmpty) {
-        return Error(EmptyResultFailure());
+        return Success([]);
       }
 
       final decoded = jsonDecode(result) as List<dynamic>;
@@ -44,15 +66,31 @@ final class CharacterSharedPreferencesService
   }
 
   @override
-  Future<CharacterResult> getCharacterById(String id) {
-    // TODO: implement getCharacterById
-    throw UnimplementedError();
+  Future<CharacterResult> getCharacterById(String id) async {
+    try {
+      final currentResult = await getAllCharacters();
+
+      return currentResult.fold(
+        onSuccess: (characters) {
+          final character =
+              characters.firstWhere((c) => c.id == id);
+          return Success(character);
+        },
+        onFailure: (failure) {
+          return Error(ApiLocalFailure('Erro ao buscar personagem'));
+        },
+      );
+    } catch (e) {
+      return Error(
+        ApiLocalFailure('Shared Preferences - Erro ao buscar: $e'),
+      );
+    }
   }
 
   @override
   Future<CharacterResult> saveCharacter(Character character) async {
     try {
-      final currentResult = await getAllCharacters();
+       final currentResult = await getAllCharacters();
 
       return await currentResult.fold(
         onSuccess: (characters) async {
@@ -61,22 +99,16 @@ final class CharacterSharedPreferencesService
           return Success(character);
         },
         onFailure: (failure) async {
-          if (failure is EmptyResultFailure) {
-            await _saveCharacters([character]);
-            return Success(character);
-          }
-
-          return Error(ApiLocalFailure());
+          await _saveCharacters([character]);
+          return Success(character);
         },
       );
-      
     } catch (e) {
       return Error(
         ApiLocalFailure('Shared Preferences - Erro ao salvar personagem: $e'),
       );
     }
   }
-
   /// Salva os personagens no storage
   Future<void> _saveCharacters(List<Character> characters) async {
     try {
@@ -86,7 +118,7 @@ final class CharacterSharedPreferencesService
       );
       await prefs.setString(_storageKey, jsonString);
     } catch (e) {
-      throw ApiLocalFailure('Erro ao salvar personagens: $e');
+            throw ApiLocalFailure('Erro ao salvar personagens: $e');
     }
   }
 }

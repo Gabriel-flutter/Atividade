@@ -6,13 +6,10 @@ import 'characters_state_viewmodel.dart';
 // ViewModel principal que será consumida na UI
 /// que mostra a lista de personagens
 class CharactersViewModel {
-  /// estado principal da tela, que contém a lista de personagens
   late final CharactersStateViewmodel _state;
 
-  /// Getter público para acessar o estado de Account
   CharactersStateViewmodel get charactersState => _state;
 
-  /// dispara os commands e effects e observa as mudanças de estado
   late final CharactersCommandsViewModel commands;
   CharactersViewModel(ICharacterFacadeUseCases facade) {
     _state = CharactersStateViewmodel();
@@ -21,11 +18,17 @@ class CharactersViewModel {
       state: _state,
       getAccountCommand: GetAllCharactersCommand(facade),
       createCharacterCommand: CreateCharacterCommand(facade),
-     );
+      updateCharacterCommand: UpdateCharacterCommand(facade), 
+      deleteCharacterCommand: DeleteCharacterCommand(facade),
+    );
   }
    // --- Comandos expostos ---
   GetAllCharactersCommand get getAllCharactersCommand =>
-      commands.getAllCharactersCommand; 
+      commands.getAllCharactersCommand;
   CreateCharacterCommand get createCharacterCommand =>
       commands.createCharacterCommand;
+  UpdateCharacterCommand get updateCharacterCommand =>
+      commands.updateCharacterCommand;
+  DeleteCharacterCommand get deleteCharacterCommand =>
+      commands.deleteCharacterCommand;
 }
